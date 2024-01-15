@@ -313,10 +313,10 @@ class UserViewTest(TestCase):
         self.client.post(self.signup_url, self.valid_signup_data)
 
         # Vérifier que l'utilisateur est connecté
-        self.assertTrue(self.client.session.get('_auth_user_id'))
+        self.assertTrue(self.client.session.get("_auth_user_id"))
 
         # Vérifier le message de succès
-        response = self.client.get('/')
+        response = self.client.get("/")
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Bienvenue" in str(message) for message in messages))
 
