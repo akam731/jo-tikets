@@ -235,22 +235,26 @@ def update_quantity_ajax(request):
         if quantity <= 0:
             cart_item.delete()
             cart = Cart.objects.get(user=request.user)
-            return JsonResponse({
-                "success": True,
-                "total_items": cart.total_items,
-                "cart_total": float(cart.total_price),
-                "item_total": 0,
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "total_items": cart.total_items,
+                    "cart_total": float(cart.total_price),
+                    "item_total": 0,
+                }
+            )
         else:
             cart_item.quantity = quantity
             cart_item.save()
             cart = cart_item.cart
-            return JsonResponse({
-                "success": True,
-                "total_items": cart.total_items,
-                "cart_total": float(cart.total_price),
-                "item_total": float(cart_item.total_price),
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "total_items": cart.total_items,
+                    "cart_total": float(cart.total_price),
+                    "item_total": float(cart_item.total_price),
+                }
+            )
 
     except Exception as e:
         return JsonResponse({"success": False, "message": f"Erreur: {str(e)}"})
@@ -270,11 +274,13 @@ def remove_item_ajax(request):
         cart_item.delete()
 
         cart = Cart.objects.get(user=request.user)
-        return JsonResponse({
-            "success": True,
-            "total_items": cart.total_items,
-            "cart_total": float(cart.total_price),
-        })
+        return JsonResponse(
+            {
+                "success": True,
+                "total_items": cart.total_items,
+                "cart_total": float(cart.total_price),
+            }
+        )
 
     except Exception as e:
         return JsonResponse({"success": False, "message": f"Erreur: {str(e)}"})

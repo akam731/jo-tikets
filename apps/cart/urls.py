@@ -20,7 +20,11 @@ urlpatterns = [
         views.remove_from_cart,
         name="remove_from_cart",
     ),
-    path("panier/modifier-quantite/", views.update_quantity_ajax, name="update_quantity_ajax"),
+    path(
+        "panier/modifier-quantite/",
+        views.update_quantity_ajax,
+        name="update_quantity_ajax",
+    ),
     path("panier/supprimer/", views.remove_item_ajax, name="remove_item_ajax"),
     path("panier/finaliser/", views.checkout_view, name="checkout"),
     path("panier/paiement/", views.process_payment, name="process_payment"),
