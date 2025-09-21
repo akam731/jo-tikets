@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nos Offres - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="offers">
+    <h1 class="section-title">Nos Offres</h1>
+    
+    <!-- Hidden CSRF token for AJAX requests -->
+    {% csrf_token %}
+    
+    {% if offers %}
+        <div class="grid">
+            {% for offer in offers %}
+                <div class="offer-card">
+                    <h2 class="card-title black">{{ offer.get_name_display }}</h2>
+                    
+                    <div class="price">
+                        <div class="amount">{{ offer.price|floatformat:2 }}€</div>
+                        <div class="capacity">{{ offer.get_capacity_display }}</div>
+                    </div>
+                    
+                    {% if offer.description %}
+                        <p class="desc">{{ offer.description }}</p>
+                    {% endif %}
+                    
+                    <div class="actions">
+                        {% if user.is_authenticated %}
+                            <button 
+                                class="offer-btn"
+                                onclick="addToCart({{ offer.id }}, '{{ offer.get_name_display }}', {{ offer.price }}, {{ offer.capacity }})"
+                            >
+                                Ajouter au panier
+                            </button>
+                        {% else %}
+                            <a href="{% url 'users:login' %}" class="offer-btn">
+                                Se connecter pour réserver
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty">
+            <div class="empty-icon"><i class="fa-solid fa-ticket"></i></div>
+            <h2 class="empty-title">Aucune offre disponible</h2>
+            <p class="empty-desc">Les offres seront bientôt disponibles.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/offers.js' %}"></script>
+{% endblock %}

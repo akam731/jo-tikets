@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <h1 class="page-title">{{ title }}</h1>
+    
+    <div class="page-grid">
+        <!-- Payment Form -->
+        <div class="checkout-form">
+            <h2 class="card-title">Informations de paiement</h2>
+            
+            <form id="payment-form">
+                {% csrf_token %}
+                
+                <!-- Payment Method -->
+                <div class="form-group">
+                    <label class="form-label">Méthode de paiement</label>
+                    <div class="payment-methods">
+                        <div class="payment-method" onclick="selectPaymentMethod('card')">
+                            <input type="radio" name="payment_method" value="card" checked>
+                            <label>Carte bancaire</label>
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('paypal')">
+                            <input type="radio" name="payment_method" value="paypal">
+                            <label>PayPal</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card Details -->
+                <div id="card-details" class="card-details">
+                    <div class="form-group">
+                        <label class="form-label">Numéro de carte</label>
+                        <input type="text" name="card_number" class="form-input" 
+                               placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Date d'expiration</label>
+                        <input type="text" name="expiry_date" class="form-input" 
+                               placeholder="MM/AA" maxlength="5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="text" name="cvv" class="form-input" 
+                               placeholder="123" maxlength="4">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nom sur la carte</label>
+                        <input type="text" name="card_name" class="form-input" 
+                               placeholder="Jean Dupont">
+                    </div>
+                </div>
+                
+                <!-- PayPal Details -->
+                <div id="paypal-details" class="paypal-info" style="display: none;">
+                    <div>
+                        Vous serez redirigé vers PayPal pour finaliser le paiement de manière sécurisée.
+                    </div>
+                </div>
+                
+                <!-- Terms and Conditions -->
+                <div class="form-group">
+                    <div class="form-checkbox">
+                        <input type="checkbox" name="terms" required>
+                        <label>J'accepte les 
+                            <a href="{% url 'users:construction' %}" class="form-link" target="_blank">conditions générales de vente</a>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="form-submit" id="pay-button">
+                    Payer {{ cart.total_price }}€
+                </button>
+            </form>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h2 class="card-title black">Résumé de la commande</h2>
+            
+            <div>
+                {% for item in cart.items.all %}
+                    <div class="order-item">
+                        <div class="order-item-info">
+                            <h3 class="card-title black">{{ item.offer.name }}</h3>
+                            <p class="card-content black">{{ item.offer.capacity }} personne{{ item.offer.capacity|pluralize:"s" }}</p>
+                            <p class="card-content black">Quantité: {{ item.quantity }}</p>
+                        </div>
+                        <div class="order-item-price">
+                            {{ item.total_price }}€
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="order-total">
+                <span>Total ({{ cart.total_items }} article{{ cart.total_items|pluralize:"s" }})</span>
+                <span>{{ cart.total_price }}€</span>
+            </div>
+            
+            <div class="checkout-actions">
+                <a href="{% url 'cart:cart' %}" class="btn btn-primary">
+                    <i class="fa-solid fa-arrow-left"></i> Modifier le panier
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to select payment method
+function selectPaymentMethod(method) {
+    // Update radio button
+    document.querySelector(`input[name="payment_method"][value="${method}"]`).checked = true;
+    
+    // Update visual selection
+    document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+    });
+    document.querySelector(`input[name="payment_method"][value="${method}"]`).closest('.payment-method').classList.add('selected');
+    
+    // Show/hide appropriate sections
+    const cardDetails = document.getElementById('card-details');
+    const paypalDetails = document.getElementById('paypal-details');
+    
+    if (method === 'card') {
+        cardDetails.style.display = 'block';
+        paypalDetails.style.display = 'none';
+    } else {
+        cardDetails.style.display = 'none';
+        paypalDetails.style.display = 'block';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentForm = document.getElementById('payment-form');
+    const cardDetails = document.getElementById('card-details');
+    const paypalDetails = document.getElementById('paypal-details');
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const payButton = document.getElementById('pay-button');
+    
+    // Initialize payment method selection
+    selectPaymentMethod('card');
+    
+    // Handle payment method change
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            selectPaymentMethod(this.value);
+        });
+    });
+    
+    // Format card number
+    const cardNumberInput = document.querySelector('input[name="card_number"]');
+    cardNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+    });
+    
+    // Format expiry date
+    const expiryInput = document.querySelector('input[name="expiry_date"]');
+    expiryInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+    });
+    
+    // Handle form submission
+    paymentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        payButton.disabled = true;
+        payButton.textContent = 'Traitement en cours...';
+        
+        const formData = new FormData(paymentForm);
+        const data = {
+            payment_method: formData.get('payment_method'),
+            card_number: formData.get('card_number'),
+            expiry_date: formData.get('expiry_date'),
+            cvv: formData.get('cvv'),
+            card_name: formData.get('card_name'),
+            terms: formData.get('terms')
+        };
+        
+        fetch('/panier/paiement/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                showMessage(data.message, 'error');
+                payButton.disabled = false;
+                payButton.textContent = 'Payer {{ cart.total_price }}€';
+            }
+        })
+        .catch(error => {
+            showMessage('Erreur lors du paiement', 'error');
+            payButton.disabled = false;
+            payButton.textContent = 'Payer {{ cart.total_price }}€';
+        });
+    });
+});
+
+function showMessage(message, type) {
+    const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 768;
+    const width = isMobile ? '90%' : '80%';
+    const minWidth = isMobile ? '280px' : '400px';
+    const whiteSpace = isMobile ? 'normal' : 'nowrap';
+    const fontSize = isMobile ? '0.9rem' : '1rem';
+    
+    toast.style.cssText = `position: fixed; top: 65px; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: 90%; width: ${width}; min-width: ${minWidth}; white-space: ${whiteSpace};`;
+    toast.innerHTML = `
+        <div style="padding: ${isMobile ? '0.75rem 0.5rem' : '1rem'}; border-radius: 0.5rem; background: ${type === 'success' ? '#dcfce7' : '#fecaca'}; color: ${type === 'success' ? '#166534' : '#dc2626'}; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; font-size: ${fontSize}; line-height: 1.4;">
+            ${message}
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

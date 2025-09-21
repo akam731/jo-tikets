@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <h1 class="page-title">{{ title }}</h1>
+    
+    <!-- Hidden CSRF token for AJAX requests -->
+    {% csrf_token %}
+    
+    {% if cart.items.count > 0 %}
+        <div class="page-grid">
+            <!-- Cart Items -->
+            <div class="page-card">
+                <h2 class="card-title black">Articles dans le panier</h2>
+                
+                {% for item in cart.items.all %}
+                    <div class="cart-item" data-item-id="{{ item.id }}">
+                        <div class="cart-item-info">
+                            <h3 class="card-title black">{{ item.offer.get_name_display }}</h3>
+                            <p class="card-content black">{{ item.offer.capacity }} personne{{ item.offer.capacity|pluralize:"s" }}</p>
+                            <p class="amount">{{ item.offer.price|floatformat:2 }}€</p>
+                        </div>
+                        
+                        <div class="cart-item-controls">
+                            <div class="cart-item-quantity">
+                                <button class="btn" onclick="decreaseQuantity({{ item.id }})"><i class="fa-solid fa-minus"></i></button>
+                                <span id="quantity-{{ item.id }}">{{ item.quantity }}</span>
+                                <button class="btn" onclick="increaseQuantity({{ item.id }})"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                            
+                            <div class="cart-item-total">
+                                <span id="total-{{ item.id }}">{{ item.total_price|floatformat:2 }}€</span>
+                            </div>
+                            
+                            <button class="btn btn-secondary" onclick="removeItem({{ item.id }})">
+                                <i class="fa-solid fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h2 class="card-title">Résumé de la commande</h2>
+                
+                <div class="cart-summary-row">
+                    <span>Articles ({{ cart.total_items }})</span>
+                    <span id="cart-total-price">{{ cart.total_price|floatformat:2 }}€</span>
+                </div>
+                
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span id="cart-total-price-final">{{ cart.total_price|floatformat:2 }}€</span>
+                </div>
+                
+                <div class="cart-actions">
+                    <a href="{% url 'cart:checkout' %}" class="btn btn-primary">
+                        Finaliser la commande
+                    </a>
+                    
+                    <a href="{% url 'catalog:offers' %}" class="btn">
+                        <i class="fa-solid fa-arrow-left"></i> Continuer mes achats
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty">
+            <div class="empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+            <h2 class="empty-title">Votre panier est vide</h2>
+            <p class="empty-desc">Découvrez nos offres de billets pour les Jeux Olympiques</p>
+            <br>
+            <div class="form-group">
+                <a href="{% url 'catalog:offers' %}" class="btn btn-primary">
+                    <i class="fa-solid fa-ticket"></i> Voir les offres
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function increaseQuantity(itemId) {
+    const quantitySpan = document.getElementById('quantity-' + itemId);
+    const currentQuantity = parseInt(quantitySpan.textContent);
+    const newQuantity = currentQuantity + 1;
+    
+    updateQuantity(itemId, newQuantity);
+}
+
+function decreaseQuantity(itemId) {
+    const quantitySpan = document.getElementById('quantity-' + itemId);
+    const currentQuantity = parseInt(quantitySpan.textContent);
+    
+    if (currentQuantity > 1) {
+        const newQuantity = currentQuantity - 1;
+        updateQuantity(itemId, newQuantity);
+    }
+}
+
+function updateQuantity(itemId, newQuantity) {
+    fetch('/panier/modifier-quantite/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour l'affichage de la quantité
+            document.getElementById('quantity-' + itemId).textContent = newQuantity;
+            
+            // Mettre à jour le total de l'article
+            document.getElementById('total-' + itemId).textContent = parseFloat(data.item_total).toFixed(2) + '€';
+            
+            // Mettre à jour le total du panier
+            document.getElementById('cart-total-price').textContent = parseFloat(data.cart_total).toFixed(2) + '€';
+            document.getElementById('cart-total-price-final').textContent = parseFloat(data.cart_total).toFixed(2) + '€';
+            
+            // Mettre à jour le nombre d'articles
+            const cartSummaryRow = document.querySelector('.cart-summary-row span:first-child');
+            cartSummaryRow.textContent = 'Articles (' + data.total_items + ')';
+        } else {
+            showMessage('Erreur lors de la mise à jour de la quantité', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showMessage('Erreur lors de la mise à jour de la quantité', 'error');
+    });
+}
+
+function removeItem(itemId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet article du panier ?')) {
+        fetch('/panier/supprimer/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.CSRF_TOKEN
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Supprimer l'élément du DOM
+                const cartItem = document.querySelector('[data-item-id="' + itemId + '"]');
+                if (cartItem) {
+                    cartItem.remove();
+                }
+                
+                // Mettre à jour le total du panier
+                document.getElementById('cart-total-price').textContent = parseFloat(data.cart_total).toFixed(2) + '€';
+                document.getElementById('cart-total-price-final').textContent = parseFloat(data.cart_total).toFixed(2) + '€';
+                
+                // Mettre à jour le nombre d'articles
+                const cartSummaryRow = document.querySelector('.cart-summary-row span:first-child');
+                cartSummaryRow.textContent = 'Articles (' + data.total_items + ')';
+                
+                // Vérifier si le panier est vide
+                if (data.total_items === 0) {
+                    location.reload();
+                }
+                
+                showMessage('Article supprimé du panier', 'success');
+            } else {
+                showMessage('Erreur lors de la suppression de l\'article', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showMessage('Erreur lors de la suppression de l\'article', 'error');
+        });
+    }
+}
+</script>
+{% endblock %}

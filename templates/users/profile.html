@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <h1 class="page-title">Mon Profil</h1>
+    
+    <div class="page-grid">
+        <!-- Profile Information -->
+        <div class="page-card">
+            <h2 class="card-title black">Informations personnelles</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Prénom</label>
+                <input type="text" value="{{ user.first_name }}" class="form-input" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nom</label>
+                <input type="text" value="{{ user.last_name }}" class="form-input" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" value="{{ user.email }}" class="form-input" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nom d'utilisateur</label>
+                <input type="text" value="{{ user.username }}" class="form-input" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Date d'inscription</label>
+                <input type="text" value="{{ user.date_joined|date:'d F Y à H:i' }}" class="form-input" readonly>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - JO Tickets{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div>
+        <h1 class="title">JO Tickets</h1>
+        <p class="subtitle">Vivez l'émotion des Jeux Olympiques 2024</p>
+        <div class="buttons">
+            <a href="{% url 'catalog:offers' %}" class="hero-btn hero-btn-outline">
+                Voir les Offres
+            </a>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'users:signup' %}" class="hero-btn btn-primary">
+                    Créer un Compte
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Olympic Sports Section -->
+<div class="sports">
+    <div>
+        <h2 class="section-title">Épreuves Olympiques</h2>
+        <p class="section-subtitle">
+            Découvrez les disciplines les plus emblématiques des Jeux Olympiques
+        </p>
+    </div>
+    
+    <div class="grid">
+            <!-- Natation -->
+            <div class="card">
+                <div class="card-bg sport-natation"></div>
+                <div class="card-overlay blue"></div>
+                <div class="card-content">
+                    <div class="card-icon">🏊‍♂️</div>
+                    <h3 class="card-title">Natation</h3>
+                    <p class="card-desc">L'élégance et la puissance dans l'eau.</p>
+                    <div class="tags">
+                        <span class="tag">50m Libre</span>
+                        <span class="tag">100m Brasse</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Athlétisme -->
+            <div class="card">
+                <div class="card-bg sport-athletisme"></div>
+                <div class="card-overlay orange"></div>
+                <div class="card-content">
+                    <div class="card-icon">🏃‍♂️</div>
+                    <h3 class="card-title">Athlétisme</h3>
+                    <p class="card-desc">Le sport roi des Jeux Olympiques.</p>
+                    <div class="tags">
+                        <span class="tag">100m Sprint</span>
+                        <span class="tag">Marathon</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gymnastique -->
+            <div class="card">
+                <div class="card-bg sport-gymnastique"></div>
+                <div class="card-overlay purple"></div>
+                <div class="card-content">
+                    <div class="card-icon">🤸‍♀️</div>
+                    <h3 class="card-title">Gymnastique</h3>
+                    <p class="card-desc">La grâce et la technique parfaites.</p>
+                    <div class="tags">
+                        <span class="tag">Sol</span>
+                        <span class="tag">Barres</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Football -->
+            <div class="card">
+                <div class="card-bg sport-football"></div>
+                <div class="card-overlay green"></div>
+                <div class="card-content">
+                    <div class="card-icon">⚽</div>
+                    <h3 class="card-title">Football</h3>
+                    <p class="card-desc">Le sport le plus populaire au monde.</p>
+                    <div class="tags">
+                        <span class="tag">Tournoi</span>
+                        <span class="tag">Finale</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basketball -->
+            <div class="card">
+                <div class="card-bg sport-basketball"></div>
+                <div class="card-overlay amber"></div>
+                <div class="card-content">
+                    <div class="card-icon">🏀</div>
+                    <h3 class="card-title">Basketball</h3>
+                    <p class="card-desc">Dynamisme et stratégie en équipe.</p>
+                    <div class="tags">
+                        <span class="tag">3x3</span>
+                        <span class="tag">5x5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tennis -->
+            <div class="card">
+                <div class="card-bg sport-tennis"></div>
+                <div class="card-overlay lime"></div>
+                <div class="card-content">
+                    <div class="card-icon">🎾</div>
+                    <h3 class="card-title">Tennis</h3>
+                    <p class="card-desc">Précision et puissance sur le court.</p>
+                    <div class="tags">
+                        <span class="tag">Simple</span>
+                        <span class="tag">Double</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cyclisme -->
+            <div class="card">
+                <div class="card-bg sport-cyclisme"></div>
+                <div class="card-overlay indigo"></div>
+                <div class="card-content">
+                    <div class="card-icon">🚴‍♂️</div>
+                    <h3 class="card-title">Cyclisme</h3>
+                    <p class="card-desc">Endurance et vitesse sur deux roues.</p>
+                    <div class="tags">
+                        <span class="tag">Route</span>
+                        <span class="tag">Piste</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Volleyball -->
+            <div class="card">
+                <div class="card-bg sport-volleyball"></div>
+                <div class="card-overlay teal"></div>
+                <div class="card-content">
+                    <div class="card-icon">🏐</div>
+                    <h3 class="card-title">Volleyball</h3>
+                    <p class="card-desc">Coordination et puissance d'équipe.</p>
+                    <div class="tags">
+                        <span class="tag">Indoor</span>
+                        <span class="tag">Beach</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Judo -->
+            <div class="card">
+                <div class="card-bg sport-judo"></div>
+                <div class="card-overlay slate"></div>
+                <div class="card-content">
+                    <div class="card-icon">🥋</div>
+                    <h3 class="card-title">Judo</h3>
+                    <p class="card-desc">Art martial et discipline olympique.</p>
+                    <div class="tags">
+                        <span class="tag">Combat</span>
+                        <span class="tag">Technique</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escrime -->
+            <div class="card">
+                <div class="card-bg sport-escrime"></div>
+                <div class="card-overlay yellow"></div>
+                <div class="card-content">
+                    <div class="card-icon">🤺</div>
+                    <h3 class="card-title">Escrime</h3>
+                    <p class="card-desc">Précision et rapidité avec l'épée.</p>
+                    <div class="tags">
+                        <span class="tag">Fleuret</span>
+                        <span class="tag">Épée</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Handball -->
+            <div class="card">
+                <div class="card-bg sport-handball"></div>
+                <div class="card-overlay red"></div>
+                <div class="card-content">
+                    <div class="card-icon">🤾‍♂️</div>
+                    <h3 class="card-title">Handball</h3>
+                    <p class="card-desc">Vitesse et adresse avec les mains.</p>
+                    <div class="tags">
+                        <span class="tag">Tournoi</span>
+                        <span class="tag">Finale</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boxe -->
+            <div class="card">
+                <div class="card-bg sport-boxe"></div>
+                <div class="card-overlay rose"></div>
+                <div class="card-content">
+                    <div class="card-icon">🥊</div>
+                    <h3 class="card-title">Boxe</h3>
+                    <p class="card-desc">Force et technique dans le ring.</p>
+                    <div class="tags">
+                        <span class="tag">Combat</span>
+                        <span class="tag">Technique</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features">
+    <div>
+        <h2 class="section-title">Pourquoi choisir JO Tickets ?</h2>
+        <p class="section-subtitle">
+            Une expérience de réservation exceptionnelle pour les Jeux Olympiques
+        </p>
+    </div>
+    
+    <div class="grid">
+        <div class="feature-card">
+            <div class="icon"><i class="fa-solid fa-ticket"></i></div>
+            <h3 class="card-subtitle">Billets Sécurisés</h3>
+            <p class="card-desc">Chaque billet est protégé par un QR code unique et des clés de sécurité cryptographiques pour garantir l'authenticité.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+            <h3 class="card-subtitle">Réservation Rapide</h3>
+            <p class="card-desc">Processus de réservation simple et rapide avec paiement sécurisé. Réservez en moins de 2 minutes !</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <h3 class="card-subtitle">Accès simplifié</h3>
+            <p class="card-desc">Présentez votre e-billet sous la forme de QR code directement depuis votre smartphone.</p>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+{% if not user.is_authenticated %}
+<div class="cta">
+    <h2 class="section-title section-second-title">Prêt à vivre l'émotion ?</h2>
+    <p class="section-subtitle section-text">
+        Créez votre compte et réservez vos billets pour les Jeux Olympiques en quelques clics. 
+        L'expérience de votre vie vous attend !
+    </p>
+    <div class="buttons">
+        <a href="{% url 'users:signup' %}" class="cta-btn">
+            Créer un Compte
+        </a>
+        <a href="{% url 'users:login' %}" class="cta-btn cta-btn_outline">
+            Se connecter
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

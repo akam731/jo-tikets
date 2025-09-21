@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Scan des Billets - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <h1 class="page-title">Scan des Billets</h1>
+    
+    <div class="page-card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 class="card-title black">Scanner un QR Code</h2>
+            <p class="card-content black">Utilisez votre caméra pour scanner le QR code d'un billet</p>
+        </div>
+        
+        <!-- QR Code Scanner -->
+        <div style="text-align: center;">
+            <div id="qr-reader" style="margin: 0 auto 2rem;"></div>
+            <div id="qr-reader-results" style="display: none;"></div>
+        </div>
+        
+        <!-- Manual Input -->
+        <hr style="margin: 2rem 0;">
+        
+        <div class="form-group">
+            <label class="form-label">Saisir manuellement la clé du billet</label>
+            <input 
+                type="text" 
+                id="manualKeyInput" 
+                placeholder="Collez ici la clé du billet..."
+                class="form-input"
+            >
+            <button 
+                id="validateManualBtn" 
+                class="btn btn-primary"
+                style="margin-top: 1rem;"
+            >
+                Valider le billet
+            </button>
+        </div>
+        
+        <!-- Results -->
+        <div id="validationResult" style="margin-top: 2rem; display: none;">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Instructions -->
+    <div class="page-card" style="background: #dbeafe; color: #1e40af;">
+        <h3 class="card-title black">Instructions</h3>
+        <ul style="list-style: disc; padding-left: 1.5rem;">
+            <li>Positionnez le QR code dans le cadre de la caméra</li>
+            <li>Le scan se fait automatiquement</li>
+            <li>Vous pouvez aussi saisir manuellement la clé du billet</li>
+            <li>Le billet sera marqué comme utilisé après validation</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let html5QrcodeScanner = null;
+
+function initQRScanner() {
+    html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader",
+        { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        },
+        false
+    );
+    
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    validateTicket(decodedText);
+}
+
+function onScanFailure(error) {
+    // Expected to fail often, so we don't log every failure
+}
+
+function validateTicket(finalKey) {
+    const resultDiv = document.getElementById('validationResult');
+    const validateBtn = document.getElementById('validateManualBtn');
+    
+    resultDiv.innerHTML = `
+        <div style="padding: 1rem; background: #dbeafe; color: #1e40af; border-radius: 0.5rem;">
+            Validation en cours...
+        </div>
+    `;
+    resultDiv.style.display = 'block';
+    validateBtn.disabled = true;
+    
+    fetch('/api/billets/valider/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            final_key: finalKey
+        })
+    })
+    .then(response => {
+        return response.json().then(data => {
+            return {
+                ok: response.ok,
+                status: response.status,
+                data: data
+            };
+        });
+    })
+    .then(result => {
+        const { ok, data } = result;
+
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div style="padding: 1rem; background: #dcfce7; color: #166534; border-radius: 0.5rem;">
+                    <h3 style="font-weight: bold; margin-bottom: 0.5rem;">Billet validé avec succès !</h3>
+                    <div style="font-size: 0.875rem;">
+                        <p><strong>Propriétaire:</strong> ${data.user_name}</p>
+                        <p><strong>Offre:</strong> ${data.offer_name}</p>
+                        <p><strong>Date d'achat:</strong> ${formatDate(data.purchase_date)}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            if (data.ticket_info) {
+                resultDiv.innerHTML = `
+                    <div style="padding: 1rem; background: #fecaca; color: #dc2626; border-radius: 0.5rem;">
+                        <h3 style="font-weight: bold; margin-bottom: 0.5rem;">Validation échouée</h3>
+                        <div style="font-size: 0.875rem; margin-bottom: 1rem;">${data.error}</div>
+                        <div style="font-size: 0.875rem; border-top: 1px solid #fca5a5; padding-top: 0.75rem;">
+                            <p><strong>Propriétaire:</strong> ${data.ticket_info.user_name}</p>
+                            <p><strong>Offre:</strong> ${data.ticket_info.offer_name}</p>
+                            <p><strong>Date d'achat:</strong> ${formatDate(data.ticket_info.purchase_date)}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="padding: 1rem; background: #fecaca; color: #dc2626; border-radius: 0.5rem;">
+                        <h3 style="font-weight: bold; margin-bottom: 0.5rem;">Validation échouée</h3>
+                        <div style="font-size: 0.875rem;">${data.error}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = 'Valider le billet';
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `
+            <div style="padding: 1rem; background: #fecaca; color: #dc2626; border-radius: 0.5rem;">
+                <h3 style="font-weight: bold; margin-bottom: 0.5rem;">Erreur</h3>
+                <div style="font-size: 0.875rem;">Une erreur est survenue lors de la validation</div>
+            </div>
+        `;
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = 'Valider le billet';
+    });
+}
+
+function validateManualKey() {
+    const manualInput = document.getElementById('manualKeyInput');
+    const key = manualInput.value.trim();
+    
+    if (!key) {
+        alert('Veuillez saisir une clé de billet');
+        return;
+    }
+    
+    validateTicket(key);
+}
+
+function formatDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return dateString;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initQRScanner();
+    
+    document.getElementById('manualKeyInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            validateManualKey();
+        }
+    });
+    
+    document.getElementById('validateManualBtn').addEventListener('click', validateManualKey);
+});
+
+window.addEventListener('beforeunload', function() {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+    }
+});
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+{% endblock %}

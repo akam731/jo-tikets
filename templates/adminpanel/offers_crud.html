@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Offres - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 class="page-title">Gestion des Offres</h1>
+        <button onclick="showCreateModal()" class="btn btn-primary">
+            Nouvelle Offre
+        </button>
+    </div>
+    
+    <!-- Offers Table -->
+    <div class="page-card">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f3f4f6;">
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Nom</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Capacité</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Prix</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Statut</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Créée le</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="offersTableBody">
+                    <!-- Offers will be loaded by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="offerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%;">
+        <h3 id="modalTitle" class="card-title">Nouvelle Offre</h3>
+        
+        <form id="offerForm">
+            <div class="form-group">
+                <label class="form-label" for="offerName">Nom de l'offre</label>
+                <input 
+                    type="text" 
+                    id="offerName" 
+                    class="form-input" 
+                    placeholder="Ex: Solo, Duo, Familiale, VIP..."
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="offerCapacity">Capacité</label>
+                <input 
+                    type="number" 
+                    id="offerCapacity" 
+                    class="form-input" 
+                    min="1" 
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="offerPrice">Prix (€)</label>
+                <input 
+                    type="number" 
+                    id="offerPrice" 
+                    class="form-input" 
+                    step="0.01" 
+                    min="0.01" 
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="offerDescription">Description</label>
+                <textarea 
+                    id="offerDescription" 
+                    class="form-input" 
+                    rows="3"
+                    placeholder="Description de l'offre..."
+                    style="resize: vertical;"
+                ></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="offerIsActive" checked>
+                    <label for="offerIsActive">Offre active</label>
+                </div>
+            </div>
+        </form>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button id="saveOfferBtn" class="btn btn-primary">
+                Enregistrer
+            </button>
+            <button id="cancelOfferBtn" class="btn btn-secondary">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%;">
+        <h3 class="card-title black">Confirmer la suppression</h3>
+        <p id="deleteMessage">Êtes-vous sûr de vouloir supprimer cette offre ?</p>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button id="confirmDeleteBtn" class="btn btn-secondary">
+                Supprimer
+            </button>
+            <button id="cancelDeleteBtn" class="btn btn-block">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let offers = [];
+let currentOfferId = null;
+let isEditMode = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadOffers();
+});
+
+function loadOffers() {
+    fetch('/api/administration/offres/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                offers = data.offers;
+                renderOffersTable();
+            } else {
+                alert('Erreur lors du chargement des offres');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors du chargement des offres');
+        });
+}
+
+function renderOffersTable() {
+    const tbody = document.getElementById('offersTableBody');
+    
+    if (offers.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fa-solid fa-ticket"></i></div>
+                    <p>Aucune offre trouvée</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = offers.map(offer => `
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 0.75rem;">
+                <div class="badge badge-primary">
+                    ${offer.name.charAt(0).toUpperCase() + offer.name.slice(1)}
+                </div>
+            </td>
+            <td style="padding: 0.75rem;">${offer.capacity} personne${offer.capacity > 1 ? 's' : ''}</td>
+            <td style="padding: 0.75rem; font-weight: bold;">${formatPrice(offer.price)}</td>
+            <td style="padding: 0.75rem;">
+                <div class="badge ${offer.is_active ? 'badge-success' : 'badge-warning'}">
+                    ${offer.is_active ? 'Active' : 'Inactive'}
+                </div>
+            </td>
+            <td style="padding: 0.75rem;">${formatDate(offer.created_at)}</td>
+            <td style="padding: 0.75rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="editOffer(${offer.id})" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                        Modifier
+                    </button>
+                    <button onclick="deleteOffer(${offer.id})" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                        Supprimer
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function showCreateModal() {
+    isEditMode = false;
+    currentOfferId = null;
+    document.getElementById('modalTitle').textContent = 'Nouvelle Offre';
+    document.getElementById('offerForm').reset();
+    document.getElementById('offerIsActive').checked = true;
+    document.getElementById('offerModal').style.display = 'block';
+}
+
+function editOffer(offerId) {
+    const offer = offers.find(o => o.id === offerId);
+    if (!offer) return;
+    
+    isEditMode = true;
+    currentOfferId = offerId;
+    document.getElementById('modalTitle').textContent = 'Modifier l\'Offre';
+    
+    document.getElementById('offerName').value = offer.name;
+    document.getElementById('offerCapacity').value = offer.capacity;
+    document.getElementById('offerPrice').value = offer.price;
+    document.getElementById('offerDescription').value = offer.description || '';
+    document.getElementById('offerIsActive').checked = offer.is_active;
+    
+    document.getElementById('offerModal').style.display = 'block';
+}
+
+function deleteOffer(offerId) {
+    const offer = offers.find(o => o.id === offerId);
+    if (!offer) return;
+    
+    currentOfferId = offerId;
+    document.getElementById('deleteMessage').textContent = 
+        `Êtes-vous sûr de vouloir supprimer l'offre "${offer.name}" ?`;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function saveOffer() {
+    const formData = {
+        name: document.getElementById('offerName').value,
+        capacity: parseInt(document.getElementById('offerCapacity').value),
+        price: parseFloat(document.getElementById('offerPrice').value),
+        description: document.getElementById('offerDescription').value,
+        is_active: document.getElementById('offerIsActive').checked
+    };
+    
+    if (!formData.name || !formData.capacity || !formData.price) {
+        alert('Veuillez remplir tous les champs obligatoires');
+        return;
+    }
+    
+    const btn = document.getElementById('saveOfferBtn');
+    btn.textContent = 'Enregistrement...';
+    btn.disabled = true;
+    
+    const url = isEditMode ? `/api/administration/offres/${currentOfferId}/` : '/api/administration/offres/creer/';
+    const method = isEditMode ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.CSRF_TOKEN
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('offerModal').style.display = 'none';
+            alert(data.message);
+            loadOffers();
+        } else {
+            alert(data.error || 'Erreur lors de l\'enregistrement');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'enregistrement');
+    })
+    .finally(() => {
+        btn.textContent = 'Enregistrer';
+        btn.disabled = false;
+    });
+}
+
+function confirmDelete() {
+    if (!currentOfferId) return;
+    
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.textContent = 'Suppression...';
+    btn.disabled = true;
+    
+    fetch(`/api/administration/offres/${currentOfferId}/supprimer/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': window.CSRF_TOKEN
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('deleteModal').style.display = 'none';
+            alert(data.message);
+            loadOffers();
+        } else {
+            alert(data.error || 'Erreur lors de la suppression');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de la suppression');
+    })
+    .finally(() => {
+        btn.textContent = 'Supprimer';
+        btn.disabled = false;
+    });
+}
+
+// Event listeners
+document.getElementById('saveOfferBtn').addEventListener('click', saveOffer);
+document.getElementById('cancelOfferBtn').addEventListener('click', () => {
+    document.getElementById('offerModal').style.display = 'none';
+});
+document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+    document.getElementById('deleteModal').style.display = 'none';
+});
+
+// Auto-update capacity when name changes
+document.getElementById('offerName').addEventListener('change', function() {
+    const capacityMap = {
+        'solo': 1,
+        'duo': 2,
+        'familiale': 4
+    };
+    
+    const capacity = capacityMap[this.value];
+    if (capacity) {
+        document.getElementById('offerCapacity').value = capacity;
+    }
+});
+</script>
+{% endblock %}

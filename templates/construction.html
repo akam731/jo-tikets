@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}En cours de création - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="construction-page">
+    <div class="construction-container">
+        <div class="construction-icon">
+            <i class="fa-solid fa-helmet-safety"></i>
+        </div>
+        <h1 class="construction-title">Page en cours de création</h1>
+        <p class="construction-text">
+            Cette page est actuellement en création.<br>
+            Elle sera bientôt disponible !
+        </p>
+        <a href="{% url 'users:home' %}" class="construction-btn">
+            Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

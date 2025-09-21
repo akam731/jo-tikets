@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de Bord - JO Tickets{% endblock %}
+
+{% block content %}
+    <div class="page">
+        <h1 class="page-title">Tableau de Bord Administrateur</h1>
+
+        <!-- Statistics Cards -->
+        <div class="page-grid">
+            <div class="page-card" style="background: #3b82f6; color: white;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div style="margin-right: 1rem;"><i class="fa-solid fa-box"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Total des Commandes</div>
+                        <div style="font-size: 2rem; font-weight: bold;">{{ total_orders }}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Commandes payées</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-card" style="background: #6b7280; color: white;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div style="margin-right: 1rem;"><i class="fa-regular fa-money-bill-1"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Chiffre d'Affaires</div>
+                        <div style="font-size: 2rem; font-weight: bold;">{{ total_revenue|floatformat:2 }}€</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Revenus totaux</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-card" style="background: #8b5cf6; color: white;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div style="margin-right: 1rem;"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Offres Actives</div>
+                        <div style="font-size: 2rem; font-weight: bold;">{{ active_offers_count }}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Types d'offres</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="page-card">
+            <h2 class="card-title black">Détail des Ventes</h2>
+
+            {% if sales_data %}
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                        <tr style="background: #f3f4f6;">
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Offre</th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Capacité
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Nombre de
+                                Ventes
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Revenus
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #d1d5db;">Prix
+                                Moyen
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in sales_data %}
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 0.75rem;">
+                                    <div class="badge badge-primary">
+                                        {{ item.offer__name|title }}
+                                    </div>
+                                </td>
+                                <td style="padding: 0.75rem;">{{ item.offer__name|title }}
+                                    ({{ item.offer__name|length }} personne{{ item.offer__name|length|pluralize:"s" }})
+                                </td>
+                                <td style="padding: 0.75rem; font-weight: bold;">{{ item.count }}</td>
+                                <td style="padding: 0.75rem; font-weight: bold; color: #16a34a;">{{ item.total_amount|floatformat:2 }}€</td>
+                                <td style="padding: 0.75rem;">{{ item.average_price|floatformat:2 }}€</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <div class="empty-icon">📊</div>
+                    <h2 class="empty-title">Aucune vente</h2>
+                    <p class="empty-desc">Les données de vente apparaîtront ici</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <br>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'adminpanel:offers_crud' %}" class="btn btn-primary">
+                Gérer les Offres
+            </a>
+        </div>
+    </div>
+{% endblock %}

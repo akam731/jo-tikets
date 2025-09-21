@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Billets - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <h1 class="page-title">Mes Billets</h1>
+    
+    {% if tickets %}
+        <div class="page-grid">
+            {% for ticket in tickets %}
+                <div class="page-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h2 class="card-title black">Billet #{{ ticket.id }}</h2>
+                        <div class="badge badge-success">
+                            {{ ticket.get_status_display }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Offre:</span>
+                            <span>{{ ticket.order.offer.get_name_display }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Capacité:</span>
+                            <span>{{ ticket.order.offer.get_capacity_display }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Prix:</span>
+                            <span class="amount">{{ ticket.order.amount|floatformat:2 }}€</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Date d'achat:</span>
+                            <span>{{ ticket.created_at|date:"d/m/Y à H:i" }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if ticket.qr_image %}
+                        <hr style="margin: 1rem 0;">
+                        
+                        <div style="text-align: center;">
+                            <h3 class="card-title">QR Code du billet</h3>
+                            <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; display: inline-block; margin: 1rem 0;">
+                                <img 
+                                    src="{{ ticket.qr_image.url }}" 
+                                    alt="QR Code du billet" 
+                                    style="max-width: 200px; height: auto;"
+                                >
+                            </div>
+                            
+                        </div>
+                    {% endif %}
+                    <br>
+                    <div class="form-group">
+                        <a href="{% url 'tickets:ticket_detail' ticket.id %}" class="btn btn-primary">
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty">
+            <div class="empty-icon"><i class="fa-solid fa-ticket"></i></div>
+            <h2 class="empty-title">Aucun billet trouvé</h2>
+            <p class="empty-desc">Vous n'avez pas encore de billets.</p>
+            <div class="form-group">
+                <a href="{% url 'catalog:offers' %}" class="btn btn-primary">
+                    Voir les offres
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

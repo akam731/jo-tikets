@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmation - JO Tickets{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div class="text-center mb-2">
+        <h1 class="page-title text-green">Commande confirmée !</h1>
+        <p class="text-lg">Votre billet a été généré avec succès</p>
+    </div>
+    
+    <div class="page-card">
+        <h2 class="card-title">Détails de la commande</h2>
+        
+        <div class="page-grid">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Numéro de commande</label>
+                    <div class="text-lg">#{{ order.id }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Offre</label>
+                    <div class="text-lg">{{ order.offer.get_name_display }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Capacité</label>
+                    <div class="text-lg">{{ order.offer.get_capacity_display }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Montant</label>
+                    <div class="amount">{{ order.amount|floatformat:2 }}€</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date de commande</label>
+                    <div class="text-lg">{{ order.created_at|date:"d F Y à H:i" }}</div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Statut</label>
+                    <div class="badge badge-success">{{ order.get_status_display }}</div>
+                </div>
+                
+                {% if order.ticket %}
+                <div class="form-group">
+                    <label class="form-label">Billet</label>
+                    <div class="text-lg">#{{ order.ticket.id }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Statut du billet</label>
+                    <div class="badge badge-success">
+                        {{ order.ticket.get_status_display }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if order.ticket and order.ticket.qr_image %}
+    <div class="page-card text-center">
+        <h2 class="card-title">Votre billet électronique</h2>
+        
+        <div class="bg-gray-50 p-2 rounded inline-block mb-1 mt-1">
+            <img 
+                src="{{ order.ticket.qr_image.url }}" 
+                alt="QR Code du billet" 
+                id="qrCodeImage"
+                class="max-w-300"
+            >
+        </div>
+        
+        <div class="mt-1">
+            <p class="card-content">
+                Présentez ce QR code à l'entrée des Jeux Olympiques
+            </p>
+            
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="text-center mt-2">
+        <div class="flex flex-gap-1 flex-justify-center flex-wrap">
+            <a href="{% url 'tickets:my_tickets' %}" class="btn btn-primary">
+                Voir tous mes billets
+            </a>
+            <a href="{% url 'catalog:offers' %}" class="btn btn-block">
+                Voir d'autres offres
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const qrImage = document.getElementById('qrCodeImage');
+    if (qrImage && !qrImage.complete) {
+        qrImage.addEventListener('load', function() {
+            console.log('QR code loaded successfully');
+        });
+        
+        qrImage.addEventListener('error', function() {
+            console.error('Failed to load QR code');
+            alert('Erreur lors du chargement du QR code');
+        });
+    }
+});
+</script>
+{% endblock %}
