@@ -27,4 +27,4 @@ RUN pip install -r requirements.txt
 RUN python manage.py collectstatic --noinput
 
 # Commande de lancement
-CMD gunicorn jo_tikets.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+CMD gunicorn jo_tickets.wsgi:application --bind 0.0.0.0:${PORT:-8000}
