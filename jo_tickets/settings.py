@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Charger les variables d'environnement depuis le fichier .env
-load_dotenv(BASE_DIR / ".env")
+# Charge .env.local si existant, sinon .env
+env_path = BASE_DIR / ".env.local"
+if not env_path.exists():
+    env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -81,6 +84,10 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
+
+# Active le SSL uniquement quand DEBUG=False (production) pour la base de données Supabase
+if not DEBUG:
+    DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
