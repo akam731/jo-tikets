@@ -10,6 +10,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from django.conf.urls import handler400, handler403, handler404, handler500
+from django.shortcuts import render
 
 
 def health_check(request):
@@ -32,3 +34,16 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Gestion des erreurs
+def error_view(request, exception=None, status_code=500, message=None):
+    context = {
+        "status_code": status_code,
+        "message": message,
+    }
+    return render(request, "errors/error.html", context, status=status_code)
+
+handler400 = lambda request, exception=None: error_view(request, exception, 400, "Requête invalide.")
+handler403 = lambda request, exception=None: error_view(request, exception, 403, "Accès refusé.")
+handler404 = lambda request, exception=None: error_view(request, exception, 404, "Page non trouvée.")
+handler500 = lambda request: error_view(request, None, 500, "Erreur interne du serveur.")
