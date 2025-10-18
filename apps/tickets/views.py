@@ -4,9 +4,9 @@ Views for the tickets app.
 
 import json
 from django.shortcuts import render, get_object_or_404
-from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Ticket
@@ -18,16 +18,7 @@ def my_tickets_view(request):
     View to display user's tickets.
     """
     tickets = Ticket.objects.filter(user=request.user).order_by("-created_at")
-    # Regénère l'image si elle est manquante sur le disque (ex: prod après redeploy)
-    for t in tickets:
-        try:
-            file_missing = not t.qr_image or not default_storage.exists(t.qr_image.name)
-        except Exception:
-            file_missing = True
-        if file_missing and t.final_key:
-            t.qr_image.delete(save=False)
-            t.qr_image = None
-            t.generate_qr_code()
+    # Génération à la volée désormais: pas d'accès disque ni régénération
     return render(request, "tickets/my_tickets.html", {"tickets": tickets})
 
 
@@ -38,17 +29,22 @@ def ticket_detail_view(request, ticket_id):
     """
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
 
-    # Force QR code generation if missing (fichier absent sur disque)
-    try:
-        file_missing = not ticket.qr_image or not default_storage.exists(ticket.qr_image.name)
-    except Exception:
-        file_missing = True
-    if file_missing and ticket.final_key:
-        ticket.qr_image.delete(save=False)
-        ticket.qr_image = None
-        ticket.generate_qr_code()
-
     return render(request, "tickets/ticket_detail.html", {"ticket": ticket})
+
+
+@login_required
+def ticket_qr_image_view(request, ticket_id):
+    """
+    Génère et renvoie à la volée l'image PNG du QR code du billet (sans stockage disque).
+    """
+    ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
+
+    png_bytes = ticket.generate_qr_code()
+
+    response = HttpResponse(png_bytes, content_type="image/png")
+    # Cache léger côté client (optionnel) pour éviter de régénérer à chaque hit
+    response["Cache-Control"] = "max-age=3600, public"
+    return response
 
 
 @csrf_exempt

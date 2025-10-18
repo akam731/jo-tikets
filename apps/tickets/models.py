@@ -93,19 +93,15 @@ class Ticket(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Générer le code QR s'il n'existe pas
-        if not self.qr_image and self.final_key:
-            self.generate_qr_code()
-
-    def generate_qr_code(self):
+    def generate_qr_code(self) -> bytes:
         """
-        Génère l'image du code QR pour ce billet.
+        Génère le PNG du QR code pour ce billet et retourne les octets (sans écriture disque).
 
         Le code QR contient uniquement la final_key pour des raisons de sécurité.
         Aucune information personnelle n'est encodée dans le code QR.
         """
         if not self.final_key:
-            return
+            return b""
 
         # Créer le code QR
         qr = qrcode.QRCode(
@@ -125,13 +121,8 @@ class Ticket(models.Model):
         img.save(buffer, format="PNG")
         buffer.seek(0)
 
-        # Générer le nom de fichier
-        # Utiliser un nom qui correspond exactement à l'URL attendue
-        # /media/qr/tickets/{id}_{final_key_prefix}.png
-        filename = f"{self.id}_{self.final_key[:8]}.png"
-
-        # Sauvegarder dans ImageField
-        self.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)
+        # Retourner le contenu binaire PNG (pas d'enregistrement dans media)
+        return buffer.getvalue()
 
     def get_status_display_class(self):
         """Retourne la classe CSS pour l'affichage du statut."""

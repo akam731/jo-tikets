@@ -45,21 +45,17 @@
                         </div>
                     </div>
                     
-                    {% if ticket.qr_image %}
-                        <hr style="margin: 1rem 0;">
-                        
-                        <div style="text-align: center;">
-                            <h3 class="card-title">QR Code du billet</h3>
-                            <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; display: inline-block; margin: 1rem 0;">
-                                <img 
-                                    src="{{ ticket.qr_image.url }}" 
-                                    alt="QR Code du billet" 
-                                    style="max-width: 200px; height: auto;"
-                                >
-                            </div>
-                            
+                    <hr style="margin: 1rem 0;">
+                    <div style="text-align: center;">
+                        <h3 class="card-title">QR Code du billet</h3>
+                        <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; display: inline-block; margin: 1rem 0;">
+                            <img 
+                                src="{% url 'tickets:ticket_qr_image' ticket.id %}" 
+                                alt="QR Code du billet" 
+                                style="max-width: 200px; height: auto;"
+                            >
                         </div>
-                    {% endif %}
+                    </div>
                     <br>
                     <div class="form-group">
                         <a href="{% url 'tickets:ticket_detail' ticket.id %}" class="btn btn-primary">
