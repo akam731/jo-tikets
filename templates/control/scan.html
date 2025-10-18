@@ -61,6 +61,7 @@
 
 <script>
 let html5QrcodeScanner = null;
+let scanLocked = false;
 
 function initQRScanner() {
     html5QrcodeScanner = new Html5QrcodeScanner(
@@ -77,6 +78,15 @@ function initQRScanner() {
 }
 
 function onScanSuccess(decodedText, decodedResult) {
+    if (scanLocked) {
+        return;
+    }
+    scanLocked = true;
+    try {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+        }
+    } catch (e) {}
     validateTicket(decodedText);
 }
 
@@ -176,6 +186,15 @@ function validateManualKey() {
         return;
     }
     
+    if (!scanLocked) {
+        scanLocked = true;
+        try {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+        } catch (e) {}
+    }
+
     validateTicket(key);
 }
 

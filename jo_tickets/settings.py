@@ -1,14 +1,19 @@
 import os
 from pathlib import Path
+from pickle import FALSE
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Par défaut, on suppose qu'on est en developpement
+IS_PROD = False
+
 # Charge .env.local si existant, sinon .env
 env_path = BASE_DIR / ".env.local"
 if not env_path.exists():
     env_path = BASE_DIR / ".env"
+    IS_PROD = True
 load_dotenv(dotenv_path=env_path)
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -86,8 +91,8 @@ DATABASES = {
     }
 }
 
-# Active le SSL uniquement quand DEBUG=False (production) pour la base de données Supabase
-if not DEBUG:
+# Active le SSL uniquement quand IS_PROD=True (production) pour la base de données Supabase
+if IS_PROD:
     DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 # Password validation
