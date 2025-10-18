@@ -882,7 +882,17 @@ body {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
-    padding: 1.25rem;
+    padding: 1.25rem 1.25rem 1rem;
+}
+
+.order-summary-title {
+    margin-bottom: 0.25rem;
+}
+
+.order-meta {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
 }
 
 .order-item {
@@ -904,6 +914,33 @@ body {
 .order-item-price {
     font-weight: 700;
     color: #111827;
+}
+
+.order-item-sub {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.order-chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+.chip {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.chip-qty {
+    background: #dbeafe;
+    color: #1e40af;
 }
 
 .order-total {

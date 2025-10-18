@@ -83,15 +83,19 @@
         
         <!-- Order Summary -->
         <div class="order-summary">
-            <h2 class="card-title black">Résumé de la commande</h2>
+            <h2 class="card-title black order-summary-title">Résumé de la commande</h2>
+            <div class="order-meta">{{ cart.total_items }} article{{ cart.total_items|pluralize:"s" }}</div>
             
             <div>
                 {% for item in cart.items.all %}
                     <div class="order-item">
                         <div class="order-item-info">
                             <h3 class="card-title black">{{ item.offer.name }}</h3>
-                            <p class="card-content black">{{ item.offer.capacity }} personne{{ item.offer.capacity|pluralize:"s" }}</p>
-                            <p class="card-content black">Quantité: {{ item.quantity }}</p>
+                            <div class="order-chips">
+                                <span class="chip">{{ item.offer.capacity }} pers</span>
+                                <span class="chip chip-qty">x{{ item.quantity }}</span>
+                            </div>
+                            <div class="order-item-sub">Prix unitaire: {{ item.offer.price }}€</div>
                         </div>
                         <div class="order-item-price">
                             {{ item.total_price }}€
