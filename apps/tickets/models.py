@@ -126,7 +126,9 @@ class Ticket(models.Model):
         buffer.seek(0)
 
         # Générer le nom de fichier
-        filename = f"ticket_{self.id}_{self.final_key[:8]}.png"
+        # Utiliser un nom qui correspond exactement à l'URL attendue
+        # /media/qr/tickets/{id}_{final_key_prefix}.png
+        filename = f"{self.id}_{self.final_key[:8]}.png"
 
         # Sauvegarder dans ImageField
         self.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)

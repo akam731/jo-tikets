@@ -10,7 +10,7 @@
     <div class="page-grid">
         <!-- Payment Form -->
         <div class="checkout-form">
-            <h2 class="card-title">Informations de paiement</h2>
+            <h2 class="card-title black">Informations de paiement</h2>
             
             <form id="payment-form">
                 {% csrf_token %}
@@ -83,7 +83,7 @@
         
         <!-- Order Summary -->
         <div class="order-summary">
-            <h2 class="card-title black order-summary-title">Résumé de la commande</h2>
+            <h2 class="card-title order-summary-title black">Résumé de la commande</h2>
             <div class="order-meta">{{ cart.total_items }} article{{ cart.total_items|pluralize:"s" }}</div>
             
             <div>

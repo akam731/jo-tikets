@@ -930,6 +930,7 @@ body {
 }
 
 .chip {
+    font-family: 'Space Grotesk';
     background: #f3f4f6;
     color: #374151;
     padding: 0.125rem 0.5rem;
@@ -950,7 +951,6 @@ body {
     padding-top: 1rem;
     margin-top: 0.75rem;
     border-top: 2px solid #e5e7eb;
-    font-weight: 800;
 }
 
 /* Pages */

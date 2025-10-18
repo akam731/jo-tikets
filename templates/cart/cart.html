@@ -10,7 +10,7 @@
     <!-- Hidden CSRF token for AJAX requests -->
     {% csrf_token %}
     
-    {% if cart.items.count > 0 %}
+    {% if cart.total_items > 0 %}
         <div class="page-grid">
             <!-- Cart Items -->
             <div class="page-card">
@@ -45,12 +45,25 @@
             
             <!-- Cart Summary -->
             <div class="cart-summary">
-                <h2 class="card-title">Résumé de la commande</h2>
+                <h2 class="card-title black">Résumé de la commande</h2>
                 
                 <div class="cart-summary-row">
                     <span>Articles ({{ cart.total_items }})</span>
                     <span id="cart-total-price">{{ cart.total_price|floatformat:2 }}€</span>
                 </div>
+                
+                {% for item in cart.items.all %}
+                <div class="cart-summary-row">
+                    <span>
+                        {{ item.offer.get_name_display }}
+                        <span class="order-chips">
+                            <span class="chip">{{ item.offer.capacity }} pers</span>
+                            <span class="chip chip-qty">x{{ item.quantity }}</span>
+                        </span>
+                    </span>
+                    <span>{{ item.total_price|floatformat:2 }}€</span>
+                </div>
+                {% endfor %}
                 
                 <div class="cart-summary-total">
                     <span>Total</span>
