@@ -4,6 +4,7 @@ Views for the tickets app.
 
 import json
 from django.shortcuts import render, get_object_or_404
+from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -17,6 +18,16 @@ def my_tickets_view(request):
     View to display user's tickets.
     """
     tickets = Ticket.objects.filter(user=request.user).order_by("-created_at")
+    # Regénère l'image si elle est manquante sur le disque (ex: prod après redeploy)
+    for t in tickets:
+        try:
+            file_missing = not t.qr_image or not default_storage.exists(t.qr_image.name)
+        except Exception:
+            file_missing = True
+        if file_missing and t.final_key:
+            t.qr_image.delete(save=False)
+            t.qr_image = None
+            t.generate_qr_code()
     return render(request, "tickets/my_tickets.html", {"tickets": tickets})
 
 
@@ -27,8 +38,14 @@ def ticket_detail_view(request, ticket_id):
     """
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
 
-    # Force QR code generation if missing
-    if not ticket.qr_image and ticket.final_key:
+    # Force QR code generation if missing (fichier absent sur disque)
+    try:
+        file_missing = not ticket.qr_image or not default_storage.exists(ticket.qr_image.name)
+    except Exception:
+        file_missing = True
+    if file_missing and ticket.final_key:
+        ticket.qr_image.delete(save=False)
+        ticket.qr_image = None
         ticket.generate_qr_code()
 
     return render(request, "tickets/ticket_detail.html", {"ticket": ticket})
