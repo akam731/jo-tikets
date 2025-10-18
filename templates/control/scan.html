@@ -43,6 +43,11 @@
         <div id="validationResult" style="margin-top: 2rem; display: none;">
             <!-- Results will be populated by JavaScript -->
         </div>
+
+        <!-- Actions -->
+        <div class="scan-actions">
+            <button id="restartScanBtn" class="btn btn-secondary hidden">Relancer le scan</button>
+        </div>
     </div>
 
     <br>
@@ -97,6 +102,7 @@ function onScanFailure(error) {
 function validateTicket(finalKey) {
     const resultDiv = document.getElementById('validationResult');
     const validateBtn = document.getElementById('validateManualBtn');
+    const restartBtn = document.getElementById('restartScanBtn');
     
     resultDiv.innerHTML = `
         <div style="padding: 1rem; background: #dbeafe; color: #1e40af; border-radius: 0.5rem;">
@@ -164,6 +170,9 @@ function validateTicket(finalKey) {
         
         validateBtn.disabled = false;
         validateBtn.innerHTML = 'Valider le billet';
+        if (restartBtn) {
+            restartBtn.classList.remove('hidden');
+        }
     })
     .catch(error => {
         resultDiv.innerHTML = `
@@ -174,6 +183,9 @@ function validateTicket(finalKey) {
         `;
         validateBtn.disabled = false;
         validateBtn.innerHTML = 'Valider le billet';
+        if (restartBtn) {
+            restartBtn.classList.remove('hidden');
+        }
     });
 }
 
@@ -223,6 +235,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById('validateManualBtn').addEventListener('click', validateManualKey);
+
+    const restartBtn = document.getElementById('restartScanBtn');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', restartScan);
+    }
 });
 
 window.addEventListener('beforeunload', function() {
@@ -230,6 +247,25 @@ window.addEventListener('beforeunload', function() {
         html5QrcodeScanner.clear();
     }
 });
+
+function restartScan() {
+    const resultDiv = document.getElementById('validationResult');
+    const restartBtn = document.getElementById('restartScanBtn');
+    try {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+        }
+    } catch (e) {}
+    scanLocked = false;
+    if (resultDiv) {
+        resultDiv.innerHTML = '';
+        resultDiv.style.display = 'none';
+    }
+    if (restartBtn) {
+        restartBtn.classList.add('hidden');
+    }
+    initQRScanner();
+}
 </script>
 
 {% endblock %}
